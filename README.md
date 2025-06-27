@@ -1,2 +1,2 @@
-# infra
-Infrastructure and deployment tools for the Kadracoon platform.
+# Kadracoon Infrastructure
+Docker, CI/CD, environment configs and deployment automation.
