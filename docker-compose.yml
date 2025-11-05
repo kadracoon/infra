@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: kadracoon
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data:Z
+    restart: unless-stopped
+    networks: [db]
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - ./data/mongo:/data/db:Z
+    restart: unless-stopped
+    networks: [db]
+
+  api:
+    image: ghcr.io/kadracoon/backend:main
+    env_file: [.env]
+    depends_on:
+      - postgres
+      - mongo
+    restart: unless-stopped
+    networks: [web, db]
+
+  tmdb-sync:
+    image: ghcr.io/kadracoon/tmdb-sync:main
+    env_file: [.env]
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks: [web, db]
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data:Z
+    restart: unless-stopped
+    networks: [db]
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:Z
+      - ./nginx/auth:/etc/nginx/auth:Z
+    depends_on: [api, tmdb-sync]
+    restart: unless-stopped
+    networks: [web]
+
+networks:
+  web: {}
+  db: {}
