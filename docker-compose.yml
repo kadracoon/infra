@@ -12,6 +12,7 @@ services:
 
   mongo:
     image: mongo:7
+    container_name: tmdb-mongo
     volumes:
       - ./data/mongo:/data/db:Z
     restart: unless-stopped
